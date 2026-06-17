@@ -30,6 +30,6 @@ TUDAT_ADD_LIBRARY("sofa_interface"
         "${sofa_interface_HEADERS}"
 #        PUBLIC_LINKS
 #        tudat_basic_astrodynamics
-        PRIVATE_LINKS "${Sofa_LIBRARIES}"
+        PRIVATE_LINKS Sofa::sofa
 #        PRIVATE_INCLUDES "${EIGEN3_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}" "${Sofa_INCLUDE_DIRS}"
         )

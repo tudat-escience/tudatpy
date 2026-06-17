@@ -27,14 +27,10 @@ macro (yacma_extension import_path)
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${Tudat_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${CSpice_INCLUDE_DIRS}>
-        $<BUILD_INTERFACE:${Sofa_INCLUDE_DIRS}>
         $<INSTALL_INTERFACE:include>)
 
     target_include_directories(${extension_name} SYSTEM PRIVATE "${pybind11_INCLUDE_DIR}")
     target_include_directories(${extension_name} SYSTEM PRIVATE "${EIGEN3_INCLUDE_DIRS}")
-    target_include_directories(${extension_name} SYSTEM PRIVATE "${CSpice_INCLUDE_DIRS}")
-    target_include_directories(${extension_name} SYSTEM PRIVATE "${Sofa_INCLUDE_DIRS}")
     target_include_directories(${extension_name} SYSTEM PRIVATE "${Tudat_INCLUDE_DIRS}")
     target_compile_definitions(${extension_name} PRIVATE "${pybind11_DEFINITIONS}")
     set_target_properties(${extension_name} PROPERTIES CXX_VISIBILITY_PRESET hidden)

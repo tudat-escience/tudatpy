@@ -32,12 +32,16 @@ function(TUDAT_ADD_LIBRARY arg1 arg2 arg3)
             $<INSTALL_INTERFACE:include>)
 
     target_include_directories("${target_name}"
-            SYSTEM PRIVATE ${PARSED_ARGS_PRIVATE_INCLUDES} ${Boost_INCLUDE_DIRS} ${CSpice_INCLUDE_DIRS} ${Sofa_INCLUDE_DIRS} ${TudatResources_INCLUDE_DIRS}
+            SYSTEM PRIVATE ${PARSED_ARGS_PRIVATE_INCLUDES} ${Boost_INCLUDE_DIRS}
             )
 
     target_link_libraries("${target_name}"
             PUBLIC    ${PARSED_ARGS_PUBLIC_LINKS}
             PRIVATE   ${PARSED_ARGS_PRIVATE_LINKS}
+	    tudat_resources::tudat_resources
+	    CSpice::cspice
+	    Sofa::sofa
+	    nrlmsise_00::nrlmsise_00
             INTERFACE ${PARSED_ARGS_INTERFACE_LINKS}
             )
     #==========================================================================
@@ -112,12 +116,16 @@ function(TUDAT_ADD_TEST_LIBRARY arg1 arg2 arg3)
             $<INSTALL_INTERFACE:include>)
 
     target_include_directories("${target_name}"
-            SYSTEM PRIVATE ${PARSED_ARGS_PRIVATE_INCLUDES} ${Boost_INCLUDE_DIRS} ${CSpice_INCLUDE_DIRS} ${Sofa_INCLUDE_DIRS} ${TudatResources_INCLUDE_DIRS}
+            SYSTEM PRIVATE ${PARSED_ARGS_PRIVATE_INCLUDES} ${Boost_INCLUDE_DIRS}
             )
 
     target_link_libraries("${target_name}"
             PUBLIC    ${PARSED_ARGS_PUBLIC_LINKS}
             PRIVATE   ${PARSED_ARGS_PRIVATE_LINKS}
+	    tudat_resources::tudat_resources
+	    CSpice::cspice
+	    Sofa::sofa
+	    nrlmsise_00::nrlmsise_00
             INTERFACE ${PARSED_ARGS_INTERFACE_LINKS}
             )
     #==========================================================================

@@ -71,8 +71,6 @@ endif()
 TUDAT_ADD_LIBRARY("aerodynamics"
     "${aerodynamics_SOURCES}"
     "${aerodynamics_HEADERS}"
-    PRIVATE_LINKS
-    "${NRLMSISE00_LIBRARIES}"
 )
 
 # Link MCD if enabled - this should be the ONLY place we link MCD to aerodynamics

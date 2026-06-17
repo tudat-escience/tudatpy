@@ -70,9 +70,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 
 # Allow access to cmake modules
-list(APPEND CMAKE_MODULE_PATH "${BASE_DIRECTORY}/cmake/tudat")
-list(APPEND CMAKE_MODULE_PATH "${BASE_DIRECTORY}/cmake/tudat/yolo")
-list(APPEND CMAKE_MODULE_PATH "${BASE_DIRECTORY}/cmake/tudatpy")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/tudat")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/tudat/yolo")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/tudatpy")
 
 # Additional statements from original cmake files (might not be needed)
 if (NOT MSVC)
@@ -358,10 +358,17 @@ if (UNIX OR (WIN32 AND CLANG))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I\"${Boost_INCLUDE_DIRS}\"")
 endif ()
 
+include(FetchContent)
+
 # Get tudat resource manager dependency.
-find_package(TudatResources REQUIRED)
-message(STATUS "TudatResources_INCLUDE_DIRS: ${TudatResources_INCLUDE_DIRS}")
-include_directories(TudatResources_INCLUDE_DIRS)
+FetchContent_Declare(
+  TudatResources
+  GIT_REPOSITORY https://github.com/tudat-escience/tudat-resources.git
+  GIT_TAG        ad0113e47bf3aa4c9c80e21c65f3a427ee44d0e3 # update-cmake
+  GIT_SHALLOW    TRUE
+  # FIND_PACKAGE_ARGS REQUIRED
+)
+FetchContent_MakeAvailable(TudatResources)
 
 # Find Eigen3 library on local system and include directories.
 find_package(Eigen3 REQUIRED)
@@ -392,19 +399,39 @@ else ()
     add_definitions(-DTUDAT_BUILD_WITH_PAGMO=0)
 endif ()
 
-# CSPICE dependency
-add_definitions(-DTUDAT_BUILD_WITH_SPICE_INTERFACE=1)
-find_package(CSpice REQUIRED 1.0.0)
+FetchContent_Declare(
+  CSpice
+  GIT_REPOSITORY https://github.com/tudat-escience/cspice-cmake.git
+  GIT_TAG        89c747a1cb33e2ebc11779819174c2b6b4a9469a # update-cmake
+  GIT_SHALLOW    TRUE
+  # FIND_PACKAGE_ARGS REQUIRED 1.0.0 NAMES CSpice
+)
+FetchContent_MakeAvailable(CSpice)
 
-# SOFA dependency
+add_definitions(-DTUDAT_BUILD_WITH_SPICE_INTERFACE=1)
+
 if (TUDAT_BUILD_WITH_SOFA_INTERFACE)
-    find_package(Sofa REQUIRED 1.0.0)
+    FetchContent_Declare(
+      Sofa
+      GIT_REPOSITORY https://github.com/tudat-escience/sofa-cmake.git
+      GIT_TAG        577ac1c14679de70e4a22e1619944331040a82bc # update-cmake
+      GIT_SHALLOW    TRUE
+      # FIND_PACKAGE_ARGS REQUIRED 1.0.0 NAMES Sofa
+    )
+    FetchContent_MakeAvailable(Sofa)
+
     add_definitions(-DTUDAT_BUILD_WITH_SOFA_INTERFACE=1)
 endif ()
 
-# NRLMSISE-00 dependency
-find_package(nrlmsise00 REQUIRED 0.1)
-message(STATUS ${NRLMSISE00_LIBRARIES})
+FetchContent_Declare(
+  nrlmsise_00
+  GIT_REPOSITORY https://github.com/tudat-escience/nrlmsise-00-cmake.git
+  GIT_TAG        7f0e28a8a0cfa722a81abd267eae48dc7a0c26e3 # project-structure
+  GIT_SHALLOW    TRUE
+  # FIND_PACKAGE_ARGS REQUIRED 0.1 NAMES nrlmsise_00
+)
+FetchContent_MakeAvailable(nrlmsise_00)
+
 add_definitions(-DTUDAT_BUILD_WITH_NRLMSISE=1)
 
 # FFTW3 dependency

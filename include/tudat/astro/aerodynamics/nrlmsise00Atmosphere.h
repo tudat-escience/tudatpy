@@ -27,7 +27,7 @@
 #include "tudat/io/solarActivityData.h"
 
 extern "C" {
-#include <nrlmsise00/nrlmsise-00.h>
+#include <nrlmsise-00.h>
 }
 
 namespace tudat

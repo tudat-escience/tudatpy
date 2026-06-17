@@ -81,9 +81,6 @@ function("TUDAT_ADD_TEST_CASE" arg1)
                 SYSTEM PRIVATE
                 "${EIGEN3_INCLUDE_DIRS}"
                 "${Boost_INCLUDE_DIRS}"
-                "${CSpice_INCLUDE_DIRS}"
-                "${Sofa_INCLUDE_DIRS}"
-                "${TudatResources_INCLUDE_DIRS}"
                 )
 
         set(test_private_links ${PARSED_ARGS_PRIVATE_LINKS})
@@ -105,6 +102,10 @@ function("TUDAT_ADD_TEST_CASE" arg1)
         target_link_libraries("${target_name}"
                 PUBLIC ${test_private_link_items}
                 PRIVATE "${Boost_LIBRARIES}"
+		tudat_resources::tudat_resources
+		CSpice::cspice
+		Sofa::sofa
+		nrlmsise_00::nrlmsise_00
                 )
 
         if (TUDAT_BUILD_WITH_PCH)

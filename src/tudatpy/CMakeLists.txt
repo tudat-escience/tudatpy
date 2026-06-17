@@ -47,6 +47,10 @@ target_link_libraries(kernel PRIVATE
     ${Boost_SYSTEM_LIBRARY}
     ${Tudat_PROPAGATION_LIBRARIES}
     ${Tudat_ESTIMATION_LIBRARIES}
+    tudat_resources::tudat_resources
+    CSpice::cspice
+    Sofa::sofa
+    nrlmsise_00::nrlmsise_00
 )
 
 # ---- Precompiled header for pybind11 bindings ----
@@ -87,9 +91,6 @@ endif ()
     target_include_directories(kernel SYSTEM PRIVATE "${pybind11_INCLUDE_DIR}")
     target_include_directories(kernel SYSTEM PRIVATE "${Boost_INCLUDE_DIRS}")
     target_include_directories(kernel SYSTEM PRIVATE "${EIGEN3_INCLUDE_DIRS}")
-    target_include_directories(kernel SYSTEM PRIVATE "${CSpice_INCLUDE_DIRS}")
-    target_include_directories(kernel SYSTEM PRIVATE "${Sofa_INCLUDE_DIRS}")
-    target_include_directories(kernel SYSTEM PRIVATE "${Tudat_INCLUDE_DIRS}")
     target_compile_definitions(kernel PRIVATE "${pybind11_DEFINITIONS}")
     set_target_properties(kernel PROPERTIES CXX_VISIBILITY_PRESET hidden)
     set_target_properties(kernel PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)
