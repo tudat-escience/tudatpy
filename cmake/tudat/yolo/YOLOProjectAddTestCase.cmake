@@ -134,19 +134,17 @@ function("TUDAT_ADD_TEST_CASE" arg1)
         endif ()
         set_property(TARGET ${target_name} PROPERTY CXX_STANDARD_REQUIRED YES)
         set_property(TARGET ${target_name} PROPERTY CXX_EXTENSIONS NO)
-        add_test(${target_name} "${PROJECT_BINARY_DIR}/tests/${target_name}")
 
-        if (TUDAT_INSTALL_TESTS)
-            #==========================================================================
-            # INSTALL-TREE.
-            #==========================================================================
+        if(PROJECT_IS_TOP_LEVEL)
+            add_test(${target_name} "${PROJECT_BINARY_DIR}/tests/${target_name}")
+
             install(TARGETS "${target_name}"
                     EXPORT tudat_export
                     LIBRARY DESTINATION "${INSTALL_LIB_DIR}"
                     ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
                     RUNTIME DESTINATION "${INSTALL_BIN_DIR}/tudat/tests"
                     )
-        endif (TUDAT_INSTALL_TESTS)
+        endif ()
 
         # Clean up set variables.
         unset(target_name)

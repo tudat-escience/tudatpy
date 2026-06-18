@@ -110,18 +110,20 @@ set_target_properties(mcd_fortran PROPERTIES
 message(STATUS "MCD_DATA_PATH set to: ${MCD_DATA_DIR}/")
 
 # Install library - ADD to tudat_export to resolve dependency
-install(TARGETS mcd_fortran
-    EXPORT tudat_export
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    PUBLIC_HEADER DESTINATION include/tudat/external/mcd
-)
+if(PROJECT_IS_TOP_LEVEL)
+    install(TARGETS mcd_fortran
+        EXPORT tudat_export
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/tudat/external/mcd
+    )
 
-# Install Fortran modules
-install(DIRECTORY ${CMAKE_BINARY_DIR}/mcd_modules/
-    DESTINATION include/tudat/external/mcd/modules
-    FILES_MATCHING PATTERN "*.mod"
-)
+    # Install Fortran modules
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/mcd_modules/
+        DESTINATION include/tudat/external/mcd/modules
+        FILES_MATCHING PATTERN "*.mod"
+    )
+endif()
 
 message(STATUS "MCD Fortran library configured:")
 message(STATUS "  Library target: mcd_fortran")

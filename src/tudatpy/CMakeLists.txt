@@ -98,12 +98,14 @@ endif ()
 # Install
 #################################################################
 # This is a preliminary solution!
-install(
-    TARGETS kernel
-    RUNTIME DESTINATION ${TUDATPY_INSTALL_PATH}
-    LIBRARY DESTINATION ${TUDATPY_INSTALL_PATH}
-)
-install(
-    DIRECTORY ${TUDATPY_SOURCE_DIR}
-    DESTINATION ${YACMA_PYTHON_MODULES_INSTALL_PATH}
-)
+if(PROJECT_IS_TOP_LEVEL)
+    install(
+        TARGETS kernel
+        RUNTIME DESTINATION ${TUDATPY_INSTALL_PATH}
+        LIBRARY DESTINATION ${TUDATPY_INSTALL_PATH}
+    )
+    install(
+        DIRECTORY ${TUDATPY_SOURCE_DIR}
+        DESTINATION ${YACMA_PYTHON_MODULES_INSTALL_PATH}
+    )
+endif()

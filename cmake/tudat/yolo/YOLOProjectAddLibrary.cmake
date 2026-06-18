@@ -66,12 +66,14 @@ function(TUDAT_ADD_LIBRARY arg1 arg2 arg3)
     #==========================================================================
     # INSTALL-TREE.
     #==========================================================================
-    install(TARGETS              "${target_name}"
-            EXPORT               tudat_export
-            LIBRARY DESTINATION  "${INSTALL_LIB_DIR}"
-            ARCHIVE DESTINATION  "${INSTALL_LIB_DIR}"
-            RUNTIME DESTINATION  "${INSTALL_BIN_DIR}"
-            )
+    if(PROJECT_IS_TOP_LEVEL)
+        install(TARGETS              "${target_name}"
+                EXPORT               tudat_export
+                LIBRARY DESTINATION  "${INSTALL_LIB_DIR}"
+                ARCHIVE DESTINATION  "${INSTALL_LIB_DIR}"
+                RUNTIME DESTINATION  "${INSTALL_BIN_DIR}"
+                )
+    endif()
     unset(target_name)
 endfunction()
 
@@ -143,11 +145,13 @@ function(TUDAT_ADD_TEST_LIBRARY arg1 arg2 arg3)
     #==========================================================================
     # INSTALL-TREE.
     #==========================================================================
-    install(TARGETS              "${target_name}"
-            EXPORT               tudat_export
-            LIBRARY DESTINATION  "${INSTALL_LIB_DIR}"
-            ARCHIVE DESTINATION  "${INSTALL_LIB_DIR}"
-            RUNTIME DESTINATION  "${INSTALL_BIN_DIR}"
-            )
+    if(PROJECT_IS_TOP_LEVEL)
+        install(TARGETS              "${target_name}"
+                EXPORT               tudat_export
+                LIBRARY DESTINATION  "${INSTALL_LIB_DIR}"
+                ARCHIVE DESTINATION  "${INSTALL_LIB_DIR}"
+                RUNTIME DESTINATION  "${INSTALL_BIN_DIR}"
+                )
+    endif()
     unset(target_name)
 endfunction()

@@ -71,11 +71,12 @@ macro (add_module extension import_path)
     # Update kernel target with extension
     # add_dependencies(kernel ${extension})
 
-    # Install
-    install(
-        TARGETS ${extension}
-        RUNTIME DESTINATION ${TUDATPY_INSTALL_PATH}/${extension_path}
-        LIBRARY DESTINATION ${TUDATPY_INSTALL_PATH}/${extension_path}
-    )
+    if(PROJECT_IS_TOP_LEVEL)
+        install(
+            TARGETS ${extension}
+            RUNTIME DESTINATION ${TUDATPY_INSTALL_PATH}/${extension_path}
+            LIBRARY DESTINATION ${TUDATPY_INSTALL_PATH}/${extension_path}
+        )
+    endif()
 
 endmacro()

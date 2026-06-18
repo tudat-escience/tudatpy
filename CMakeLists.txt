@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 
 # Display basic cmake configuration
 message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
@@ -74,11 +74,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/tudat")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/tudat/yolo")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/tudatpy")
 
-# Additional statements from original cmake files (might not be needed)
-if (NOT MSVC)
-    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
-endif ()
-enable_testing()
 if (MINGW)
     # https://github.com/tudat-team/tudatpy-feedstock/issues/3
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_hypot=hypot")
@@ -88,11 +83,13 @@ if (MINGW)
     # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wl,--large-address-aware")
 endif ()
 
-if (MSVC)
+if(MSVC)
     # https://docs.microsoft.com/en-us/cpp/build/reference/bigobj-increase-number-of-sections-in-dot-obj-file?view=vs-2019
     # This is equivalent to the big-obj for MinGW, this should stop error C1128.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-endif ()
+else()
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+endif()
 
 # +============================================================================
 # BUILD OPTIONS
@@ -111,6 +108,11 @@ option(
 option(
     TUDAT_BUILD_WITH_PCH
     "Enable precompiled headers for supported targets."
+    ON
+)
+option(
+    TUDATPY_BUILD_BINDINGS
+    "Build tudatpy Python bindings."
     ON
 )
 option(
@@ -174,7 +176,6 @@ option(
     OFF
 )
 if(CMAKE_CXX_SIMULATE_ID MATCHES "MSVC")
-    # Build extended precision propagation tools.
     option(
         TUDAT_BUILD_WITH_EXTENDED_PRECISION_PROPAGATION_TOOLS
         "Build tudat with extended precision propagation tools."
@@ -284,10 +285,6 @@ set(
     _TUDAT_REQUIRED_BOOST_LIBS
     filesystem system regex date_time thread chrono atomic unit_test_framework
 )
-# if (TUDAT_BUILD_TESTS)
-#     # Add the unit test framework, if needed.
-#     list(APPEND _TUDAT_REQUIRED_BOOST_LIBS unit_test_framework)
-# endif ()
 
 # Set cmake build-type.
 # If not supplied by the user (either directly as an argument of through
@@ -503,7 +500,6 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 include(YOLOProjectAddTestCase)
 include(YOLOProjectAddLibrary)
 include(YOLOProjectAddExecutable)
-include(YOLOProjectAddExternalData)
 
 # Define list of libraries in tudat and run setup for submodules
 include(TudatLinkLibraries)
@@ -559,6 +555,7 @@ add_subdirectory(src/tudat/io)
 add_subdirectory(src/tudat/utils)
 
 if (TUDAT_BUILD_TESTS)
+    enable_testing()
     add_subdirectory(tests/test_tudat)
 endif ()
 
@@ -569,76 +566,92 @@ endif()
 # Additional contents from original tudat cmake
 # ========================================================================
 
-# Installation of the header files.
-install(
-    DIRECTORY include/
-    DESTINATION "${INSTALL_INCLUDE_DIR}"
-)
-install(
-    FILES "${PROJECT_BINARY_DIR}/include/tudat/config.hpp"
-    DESTINATION ${INSTALL_INCLUDE_DIR}/tudat
-)
+if(PROJECT_IS_TOP_LEVEL)
+    # Installation of the header files.
+    install(
+        DIRECTORY include/
+        DESTINATION "${INSTALL_INCLUDE_DIR}"
+    )
+    install(
+        FILES "${PROJECT_BINARY_DIR}/include/tudat/config.hpp"
+        DESTINATION ${INSTALL_INCLUDE_DIR}/tudat
+    )
 
-# Add all targets to the build-tree export set
-export(
-    TARGETS ${Tudat_LIBRARIES}
-    NAMESPACE Tudat::
-    FILE "${CMAKE_CURRENT_BINARY_DIR}/tudat_export.cmake"
-)
+    # Add all targets to the build-tree export set
+    export(
+        TARGETS ${Tudat_LIBRARIES}
+        NAMESPACE Tudat::
+        FILE "${CMAKE_CURRENT_BINARY_DIR}/tudat_export.cmake"
+    )
 
-# Installation of the export modules.
-install(EXPORT tudat_export NAMESPACE Tudat:: DESTINATION "${RELATIVE_INSTALL_CMAKE_DIR}")
+    # Installation of the export modules.
+    install(EXPORT tudat_export NAMESPACE Tudat:: DESTINATION "${RELATIVE_INSTALL_CMAKE_DIR}")
 
-# Export the package for use from the build-tree
-# (this registers the build-tree with a global CMake-registry)
-set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
-export(PACKAGE Tudat)
+    # Export the package for use from the build-tree
+    # (this registers the build-tree with a global CMake-registry)
+    set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
+    export(PACKAGE Tudat)
 
-# +============================================================================
-# PROJECT CONFIG
-#  For external use of project.
-# +============================================================================
-include(CMakePackageConfigHelpers)
+    install(
+        TARGETS tudat_resources cspice nrlmsise_00
+        EXPORT tudat_export
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
 
-configure_package_config_file(
-        "${BASE_DIRECTORY}/configuration/tudat/tudat-config.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake"
-        INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}"
-)
+    if (TUDAT_BUILD_WITH_SOFA_INTERFACE)
+        install(
+            TARGETS sofa
+            EXPORT tudat_export
+            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        )
+    endif()
 
-configure_file(
-        "${BASE_DIRECTORY}/configuration/tudat/tudat-config.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake" @ONLY
-)
+    # +============================================================================
+    # PROJECT CONFIG
+    #  For external use of project.
+    # +============================================================================
+    include(CMakePackageConfigHelpers)
 
-# Configure file path for tudat data loading.
-#set(Tudat_DATA_DIRS ${INSTALL_CMAKE_DIR}/${RELATIVE_INSTALL_DATA_DIR})
+    configure_package_config_file(
+            "${BASE_DIRECTORY}/configuration/tudat/tudat-config.cmake.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake"
+            INSTALL_DESTINATION "${INSTALL_CMAKE_DIR}"
+    )
 
+    configure_file(
+            "${BASE_DIRECTORY}/configuration/tudat/tudat-config.cmake.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake" @ONLY
+    )
 
-file(
-        COPY "${BASE_DIRECTORY}/cmake/tudat/TudatFindBoost.cmake"
-        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
-)
+    file(
+            COPY "${BASE_DIRECTORY}/cmake/tudat/TudatFindBoost.cmake"
+            DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+    )
 
-install(
-        FILES
-        "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake"
-        "${BASE_DIRECTORY}/cmake/tudat/TudatFindBoost.cmake"
+    install(
+            FILES
+            "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake"
+            "${BASE_DIRECTORY}/cmake/tudat/TudatFindBoost.cmake"
+            DESTINATION "${INSTALL_CMAKE_DIR}"
+    )
+
+    # Take care of versioning.
+
+    # NOTE: SameMinorVersion available only
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/tudat-config-version.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMinorVersion
+    )
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/tudat-config-version.cmake"
         DESTINATION "${INSTALL_CMAKE_DIR}"
-)
-
-# Take care of versioning.
-
-# NOTE: SameMinorVersion available only
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/tudat-config-version.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMinorVersion
-)
-install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/tudat-config-version.cmake"
-    DESTINATION "${INSTALL_CMAKE_DIR}"
-)
+    )
+endif()
 
 # ========
 message(
@@ -653,42 +666,24 @@ message(
 message(STATUS Tudat: [Tudat_PROPAGATION_LIBRARIES] ${Tudat_PROPAGATION_LIBRARIES})
 message(STATUS Tudat: [Tudat_INCLUDE_DIRS] ${Tudat_INCLUDE_DIRS})
 
-# Pybind11 dependency
-include(YACMAPythonSetup)
-set(PYBIND11_FINDPYTHON ON)
-find_package(pybind11 CONFIG REQUIRED)
-set(pybind11_INCLUDE_DIRS ${pybind11_BUILD_INCLUDE_DIRS}) # TODO: Check
-set(pybind11_INCLUDE_DIR ${pybind11_BUILD_INCLUDE_DIRS})  # TODO: Check
+if(TUDATPY_BUILD_BINDINGS)
+    # Pybind11 dependency
+    include(YACMAPythonSetup)
+    set(PYBIND11_FINDPYTHON ON)
+    find_package(pybind11 CONFIG REQUIRED)
+    set(pybind11_INCLUDE_DIRS ${pybind11_BUILD_INCLUDE_DIRS})
+    set(pybind11_INCLUDE_DIR ${pybind11_BUILD_INCLUDE_DIRS})
 
-# Source directory for tudatpy
-set(TUDATPY_SOURCE_DIR ${BASE_DIRECTORY}/src/tudatpy)
+    # Source directory for tudatpy
+    set(TUDATPY_SOURCE_DIR ${BASE_DIRECTORY}/src/tudatpy)
 
-# Add docs to build directory
-file(
-    COPY ${BASE_DIRECTORY}/docs/tudatpy
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/docs
-)
+    # Add docs to build directory
+    file(
+        COPY ${BASE_DIRECTORY}/docs/tudatpy
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/docs
+    )
 
-# Include tudatpy CMake configuration
-include_directories(include/tudatpy)
-add_subdirectory(src/tudatpy)
-
-# +============================================================================
-# CLEAN UP (Project name independent)
-#  Cleanup in case project is not top level.
-# +============================================================================
-unset(INSTALL_LIB_DIR)
-unset(INSTALL_BIN_DIR)
-unset(INSTALL_INCLUDE_DIR)
-unset(INSTALL_DATA_DIR)
-unset(INSTALL_MAN_DIR)
-unset(INSTALL_TESTS_DIR)
-unset(INSTALL_CMAKE_DIR)
-
-unset(RELATIVE_INSTALL_LIB_DIR)
-unset(RELATIVE_INSTALL_BIN_DIR)
-unset(RELATIVE_INSTALL_INCLUDE_DIR)
-unset(RELATIVE_INSTALL_DATA_DIR)
-unset(RELATIVE_INSTALL_MAN_DIR)
-unset(RELATIVE_INSTALL_TESTS_DIR)
-unset(RELATIVE_INSTALL_CMAKE_DIR)
+    # Include tudatpy CMake configuration
+    include_directories(include/tudatpy)
+    add_subdirectory(src/tudatpy)
+endif()
