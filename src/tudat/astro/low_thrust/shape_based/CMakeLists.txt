@@ -48,4 +48,6 @@ endif()
 TUDAT_ADD_LIBRARY("shape_based_methods"
         "${SHAPEBASEDMETHODS_SOURCES}"
         "${shape_based_methods_HEADERS}"
+	PUBLIC_LINKS
+	tudat_ephemerides
         )

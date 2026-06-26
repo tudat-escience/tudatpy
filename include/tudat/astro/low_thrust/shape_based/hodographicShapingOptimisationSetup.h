@@ -20,6 +20,8 @@
 #include <tudat/math/basic/mathematicalConstants.h>
 #include "tudat/astro/basic_astro/unitConversions.h"
 #include <tudat/astro/basic_astro/orbitalElementConversions.h>
+#include "tudat/astro/ephemerides.h"
+#include "tudat/astro/low_thrust/shape_based/baseFunctionsHodographicShaping.h"
 #include <tudat/io/basicInputOutput.h>
 
 #include <random>
