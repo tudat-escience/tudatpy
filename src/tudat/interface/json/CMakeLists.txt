@@ -111,6 +111,8 @@ endif ()
 TUDAT_ADD_LIBRARY("json_interface_library"
         "${json_interface_SOURCES}"
         "${json_interface_HEADERS}"
+	PRIVATE_LINKS
+	nlohmann_json::nlohmann_json
 #        PUBLIC_INTERFACE
 #        json_propagation_LIBRARIES
 #        PRIVATE_LINKS "${Boost_LIBRARIES}"

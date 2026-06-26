@@ -20,15 +20,14 @@ if (TUDAT_BUILD_WITH_PCH AND TUDAT_BUILD_WITH_TEST_PCH)
     )
 
     target_include_directories(tudat_observation_models_test_case_support SYSTEM PRIVATE
-        "${EIGEN3_INCLUDE_DIRS}"
-        "${Boost_INCLUDE_DIRS}"
     )
 
     target_link_libraries(tudat_observation_models_test_case_support PUBLIC
         ${Tudat_ESTIMATION_LIBRARIES}
     )
     target_link_libraries(tudat_observation_models_test_case_support PRIVATE
-        "${Boost_LIBRARIES}" tudat_resources::tudat_resources CSpice::cspice Sofa::sofa nrlmsise_00::nrlmsise_00
+        Boost::filesystem Boost::system Boost::regex Boost::date_time Boost::thread Boost::chrono Boost::atomic Boost::unit_test_framework
+        tudat_resources::tudat_resources CSpice::cspice Sofa::sofa nrlmsise_00::nrlmsise_00
     )
 
     set_target_properties(tudat_observation_models_test_case_support PROPERTIES POSITION_INDEPENDENT_CODE OFF)

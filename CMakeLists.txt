@@ -26,14 +26,7 @@ cmake_policy(SET CMP0048 NEW)  # Missing documentation
 if(POLICY CMP0148)
     cmake_policy(SET CMP0148 OLD)
 endif()
-# Temporary compatibility setting: keep the legacy Boost discovery behavior while
-# this project still relies on older Boost / Boost.Python package discovery
-# elsewhere in the build.
-# Migration path: update to the modern Boost package/config-based discovery
-# approach and then switch CMP0167 to NEW.
-if(POLICY CMP0167)
-    cmake_policy(SET CMP0167 OLD)
-endif()
+
 if(POLICY CMP0175)
     cmake_policy(SET CMP0175 NEW)
 endif()
@@ -280,12 +273,6 @@ if (NOT TUDAT_BUILD_STATIC_LIBRARY)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif ()
 
-# Set required boost components.
-set(
-    _TUDAT_REQUIRED_BOOST_LIBS
-    filesystem system regex date_time thread chrono atomic unit_test_framework
-)
-
 # Set cmake build-type.
 # If not supplied by the user (either directly as an argument of through
 # the "UserSettings.txt" file), the default built type is "Release".
@@ -298,62 +285,12 @@ endif ()
 # Set compiler based on user input
 include(compiler)
 
-# Find Boost and check GLBICXX_USE_CXX11_ABI (TODO: Better description)
-include(TudatFindBoost)
-message(STATUS "Checking for _GLIBCXX_USE_CXX11_ABI definition...")
-if (DEFINED _GLIBCXX_USE_CXX11_ABI)
-    if (_GLIBCXX_USE_CXX11_ABI)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=1")
-        set(Tudat_DEFINITIONS "${Tudat_DEFINITIONS} -D_GLIBCXX_USE_CXX11_ABI=1")
-        message(STATUS "-D_GLIBCXX_USE_CXX11_ABI=1 added to CMAKE_CXX_FLAGS!")
-    elseif (NOT _GLIBCXX_USE_CXX11_ABI)
-        message(Boost_VERSION_MAJOR: ${Boost_VERSION_MAJOR})
-        message(Boost_VERSION_MINOR: ${Boost_VERSION_MINOR})
-        message(TUDAT_BUILD_GNU: ${TUDAT_BUILD_GNU})
-        if (
-            (${Boost_VERSION_MAJOR} LESS_EQUAL "1")
-            AND (${Boost_VERSION_MINOR} LESS_EQUAL "67") AND ${TUDAT_BUILD_GNU}
-        )
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-            set(
-                Tudat_DEFINITIONS
-                "${Tudat_DEFINITIONS} -D_GLIBCXX_USE_CXX11_ABI=0"
-            )
-            message(
-                STATUS
-                "-D_GLIBCXX_USE_CXX11_ABI=0 added to CMAKE_CXX_FLAGS!"
-            )
-        elseif (
-            (${Boost_VERSION_MAJOR} GREATER_EQUAL "1")
-            AND (${Boost_VERSION_MINOR} GREATER_EQUAL "70")
-            AND ${TUDAT_BUILD_GNU}
-        )
-            #            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-            #            set(Tudat_DEFINITIONS "${Tudat_DEFINITIONS} -D_GLIBCXX_USE_CXX11_ABI=0")
-            #            message(STATUS "-D_GLIBCXX_USE_CXX11_ABI=0 added to CMAKE_CXX_FLAGS!")
-        elseif (${TUDAT_BUILD_MSVC})
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-            set(
-                Tudat_DEFINITIONS
-                "${Tudat_DEFINITIONS} -D_GLIBCXX_USE_CXX11_ABI=0"
-            )
-            message(
-                STATUS
-                "-D_GLIBCXX_USE_CXX11_ABI=0 added to CMAKE_CXX_FLAGS!"
-            )
-        else ()
-            message(STATUS "_GLIBCXX_USE_CXX11_ABI was set as 0, but since the boost version is >=1.68|>1.70 [${Boost_VERSION}] and compiler_id is GNU, it's being ignored!")
-            add_definitions(-DBOOST_ERROR_CODE_HEADER_ONLY)
-        endif ()
-    endif ()
-else ()
-    message(STATUS "_GLIBCXX_USE_CXX11_ABI was not found.")
-endif ()
-
-include_directories(AFTER SYSTEM ${Boost_INCLUDE_DIRS})
-if (UNIX OR (WIN32 AND CLANG))
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I\"${Boost_INCLUDE_DIRS}\"")
-endif ()
+# Find Boost using modern config-based discovery (CMP0167 defaults to NEW).
+if(TUDAT_BUILD_TESTS)
+  find_package(Boost 1.72 REQUIRED COMPONENTS filesystem system regex date_time thread chrono atomic unit_test_framework)
+else()
+  find_package(Boost 1.72 REQUIRED COMPONENTS filesystem system regex date_time thread chrono atomic)
+endif()
 
 include(FetchContent)
 
@@ -367,31 +304,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(TudatResources)
 
-# Find Eigen3 library on local system and include directories.
+# Find Eigen3 library (header-only; provides Eigen3::Eigen target).
 find_package(Eigen3 REQUIRED)
-set(_TUDAT_EIGEN_INCLUDE_DIRS "")
-if(TARGET Eigen3::Eigen)
-    get_target_property(_TUDAT_EIGEN_INCLUDE_DIRS Eigen3::Eigen INTERFACE_INCLUDE_DIRECTORIES)
-endif()
-if(NOT _TUDAT_EIGEN_INCLUDE_DIRS AND EIGEN3_INCLUDE_DIRS)
-    set(_TUDAT_EIGEN_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIRS}")
-endif()
-if(NOT _TUDAT_EIGEN_INCLUDE_DIRS AND EIGEN3_INCLUDE_DIR)
-    set(_TUDAT_EIGEN_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIR}")
-endif()
-if(NOT _TUDAT_EIGEN_INCLUDE_DIRS)
-    message(FATAL_ERROR "Eigen3 was found, but no Eigen include directory was detected.")
-endif()
-include_directories(AFTER SYSTEM ${_TUDAT_EIGEN_INCLUDE_DIRS})
-if (APPLE OR (WIN32 AND CLANG))
-    list(GET _TUDAT_EIGEN_INCLUDE_DIRS 0 _TUDAT_EIGEN_PRIMARY_INCLUDE_DIR)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I\"${_TUDAT_EIGEN_PRIMARY_INCLUDE_DIR}\"")
-endif ()
 
-# PAGMO dependency
+# Pagmo dependency
 if (TUDAT_BUILD_WITH_PAGMO)
     add_definitions(-DTUDAT_BUILD_WITH_PAGMO=1)
-    find_package(Pagmo REQUIRED)
+    find_package(Pagmo CONFIG REQUIRED)
 else ()
     add_definitions(-DTUDAT_BUILD_WITH_PAGMO=0)
 endif ()
@@ -433,32 +352,12 @@ add_definitions(-DTUDAT_BUILD_WITH_NRLMSISE=1)
 
 # FFTW3 dependency
 if (TUDAT_BUILD_WITH_FFTW3)
-    if(NOT APPLE)
-        find_package(FFTW3)
-        message(STATUS "FFTW " ${FFTW3_LIBRARIES})
-        include_directories(AFTER SYSTEM "${FFTW3_INCLUDE_DIRS}")
-        if(WIN32)
-            set (FFTW3_LIBRARIES "${FFTW3_LIBRARY_DIRS}/fftw3.lib")
-        else()
-            set (FFTW3_LIBRARIES "${FFTW3_LIBRARY_DIRS}/libfftw3.so")
-        endif()
-        add_definitions(-DTUDAT_BUILD_WITH_FFTW3=1)
-    else( )
-        find_package(FFTW3)
-        message(STATUS ${FFTW3_LIBRARIES})
-        include_directories(AFTER SYSTEM "${FFTW3_INCLUDE_DIRS}")
-        set(
-            CMAKE_CXX_FLAGS
-            "${CMAKE_CXX_FLAGS} -I\"${FFTW3_INCLUDE_DIR}\""
-        )
-        set (FFTW3_LIBRARIES "${FFTW3_LIBRARY_DIRS}/libfftw3.dylib")
-        add_definitions(-DTUDAT_BUILD_WITH_FFTW3=1)
-    endif( )
+    find_package(FFTW3 REQUIRED)
+    add_definitions(-DTUDAT_BUILD_WITH_FFTW3=1)
 else( )
     add_definitions(-DTUDAT_BUILD_WITH_FFTW3=0)
 endif( )
 
-# JSON dependency
 if (TUDAT_BUILD_WITH_JSON_INTERFACE)
     find_package(nlohmann_json REQUIRED 3.7.3)
 endif ()
@@ -491,15 +390,12 @@ else()
     add_definitions(-DTUDAT_BUILD_WITH_MCD=0)
 endif()
 
-# TODO: Not sure if this is needed. Comes from CMake of tudatpy
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_STATIC_RUNTIME OFF)
+find_package(CURL QUIET)
 
-# Include YOLO functionality
-# TODO: Check what this does and if we need it
-include(YOLOProjectAddTestCase)
 include(YOLOProjectAddLibrary)
 include(YOLOProjectAddExecutable)
+include(YOLOProjectAddTestCase)
+
 
 # Define list of libraries in tudat and run setup for submodules
 include(TudatLinkLibraries)
@@ -627,15 +523,9 @@ if(PROJECT_IS_TOP_LEVEL)
             "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake" @ONLY
     )
 
-    file(
-            COPY "${BASE_DIRECTORY}/cmake/tudat/TudatFindBoost.cmake"
-            DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
-    )
-
     install(
             FILES
             "${CMAKE_CURRENT_BINARY_DIR}/tudat-config.cmake"
-            "${BASE_DIRECTORY}/cmake/tudat/TudatFindBoost.cmake"
             DESTINATION "${INSTALL_CMAKE_DIR}"
     )
 
@@ -682,8 +572,4 @@ if(TUDATPY_BUILD_BINDINGS)
         COPY ${BASE_DIRECTORY}/docs/tudatpy
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/docs
     )
-
-    # Include tudatpy CMake configuration
-    include_directories(include/tudatpy)
-    add_subdirectory(src/tudatpy)
 endif()

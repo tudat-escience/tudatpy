@@ -43,12 +43,11 @@ if(TUDAT_BUILD_WITH_FFTW3)
     TUDAT_ADD_LIBRARY("statistics"
             "${statistics_SOURCES}"
             "${statistics_HEADERS}"
-            "${FFTW3_LIBRARIES}"
+            PRIVATE_LINKS FFTW3::fftw3
             )
 else()
     TUDAT_ADD_LIBRARY("statistics"
             "${statistics_SOURCES}"
             "${statistics_HEADERS}"
-            "${FFTW3_LIBRARIES}"
             )
 endif()

@@ -20,14 +20,9 @@ function(TUDAT_ADD_EXECUTABLE arg1 arg2)
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
             $<INSTALL_INTERFACE:include>)
 
-    target_include_directories("${target_name}"
-            SYSTEM PRIVATE "${EIGEN3_INCLUDE_DIRS}" "${Boost_INCLUDE_DIRS}"
-            )
-
-    message(STATUS LIB:BOOST:${Boost_LIBRARIES})
     target_link_libraries("${target_name}"
             PUBLIC    ${ARGN}
-            PRIVATE   "${Boost_LIBRARIES}"
+            PRIVATE   Boost::filesystem Boost::system Boost::regex Boost::date_time Boost::thread Boost::chrono Boost::atomic Eigen3::Eigen
             )
 
     #==========================================================================

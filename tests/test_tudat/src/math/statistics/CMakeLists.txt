@@ -43,9 +43,9 @@ if(TUDAT_BUILD_WITH_FFTW3)
             tudat_statistics
             tudat_basic_mathematics
             tudat_basics
-            ${FFTW3_LIBRARIES}
+            FFTW3::fftw3
             )
 
     TUDAT_ADD_TEST_CASE(Fft PRIVATE_LINKS
-            tudat_statistics tudat_basic_mathematics ${FFTW3_LIBRARIES})
+            tudat_statistics tudat_basic_mathematics FFTW3::fftw3)
 endif()

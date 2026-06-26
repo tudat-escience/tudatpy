@@ -43,8 +43,7 @@ YACMA_PYTHON_MODULE(kernel ${sources})
 
 # Link against libraries
 target_link_libraries(kernel PRIVATE
-    ${Boost_LIBRARIES}
-    ${Boost_SYSTEM_LIBRARY}
+    Boost::filesystem Boost::system Boost::regex Boost::date_time Boost::thread Boost::chrono Boost::atomic
     ${Tudat_PROPAGATION_LIBRARIES}
     ${Tudat_ESTIMATION_LIBRARIES}
     tudat_resources::tudat_resources
@@ -80,6 +79,7 @@ set_target_properties(kernel PROPERTIES UNITY_BUILD OFF)
 # Include headers
 target_include_directories(kernel PUBLIC
     $<BUILD_INTERFACE:${Tudat_INCLUDE_DIRS}>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/tudatpy>
     $<INSTALL_INTERFACE:include>)
 
 if (TUDATPY_BUILD_WITH_DETAILED_PYBIND11_ERRORS)
@@ -89,8 +89,6 @@ else ()
 endif ()
 
     target_include_directories(kernel SYSTEM PRIVATE "${pybind11_INCLUDE_DIR}")
-    target_include_directories(kernel SYSTEM PRIVATE "${Boost_INCLUDE_DIRS}")
-    target_include_directories(kernel SYSTEM PRIVATE "${EIGEN3_INCLUDE_DIRS}")
     target_compile_definitions(kernel PRIVATE "${pybind11_DEFINITIONS}")
     set_target_properties(kernel PROPERTIES CXX_VISIBILITY_PRESET hidden)
     set_target_properties(kernel PROPERTIES VISIBILITY_INLINES_HIDDEN TRUE)

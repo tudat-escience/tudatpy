@@ -37,11 +37,12 @@ function(TUDAT_ADD_LIBRARY arg1 arg2 arg3)
 
     target_link_libraries("${target_name}"
             PUBLIC    ${PARSED_ARGS_PUBLIC_LINKS}
+                      Eigen3::Eigen
             PRIVATE   ${PARSED_ARGS_PRIVATE_LINKS}
-	    tudat_resources::tudat_resources
-	    CSpice::cspice
-	    Sofa::sofa
-	    nrlmsise_00::nrlmsise_00
+                      tudat_resources::tudat_resources
+                      CSpice::cspice
+                      Sofa::sofa
+                      nrlmsise_00::nrlmsise_00
             INTERFACE ${PARSED_ARGS_INTERFACE_LINKS}
             )
     #==========================================================================
@@ -123,11 +124,12 @@ function(TUDAT_ADD_TEST_LIBRARY arg1 arg2 arg3)
 
     target_link_libraries("${target_name}"
             PUBLIC    ${PARSED_ARGS_PUBLIC_LINKS}
+                      Eigen3::Eigen
             PRIVATE   ${PARSED_ARGS_PRIVATE_LINKS}
-	    tudat_resources::tudat_resources
-	    CSpice::cspice
-	    Sofa::sofa
-	    nrlmsise_00::nrlmsise_00
+                      tudat_resources::tudat_resources
+                      CSpice::cspice
+                      Sofa::sofa
+                      nrlmsise_00::nrlmsise_00
             INTERFACE ${PARSED_ARGS_INTERFACE_LINKS}
             )
     #==========================================================================

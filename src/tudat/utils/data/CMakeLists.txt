@@ -15,10 +15,17 @@ set(data_HEADERS downloadFile.h)
 set(data_SOURCES downloadFile.cpp)
 
 # Add library.
-TUDAT_ADD_LIBRARY("data"
-        "${data_SOURCES}"
-        "${data_HEADERS}"
-        PUBLIC_LINKS "${CURL_LIBRARIES}"
-        )
+if(TARGET CURL::libcurl)
+    TUDAT_ADD_LIBRARY("data"
+            "${data_SOURCES}"
+            "${data_HEADERS}"
+            PUBLIC_LINKS CURL::libcurl
+            )
+else()
+    TUDAT_ADD_LIBRARY("data"
+            "${data_SOURCES}"
+            "${data_HEADERS}"
+            )
+endif()
 
 
