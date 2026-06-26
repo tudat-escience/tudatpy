@@ -323,6 +323,7 @@ FetchContent_Declare(
   # FIND_PACKAGE_ARGS REQUIRED 1.0.0 NAMES CSpice
 )
 FetchContent_MakeAvailable(CSpice)
+set_target_properties(cspice PROPERTIES UNITY_BUILD OFF)
 
 add_definitions(-DTUDAT_BUILD_WITH_SPICE_INTERFACE=1)
 
@@ -347,6 +348,7 @@ FetchContent_Declare(
   # FIND_PACKAGE_ARGS REQUIRED 0.1 NAMES nrlmsise_00
 )
 FetchContent_MakeAvailable(nrlmsise_00)
+set_target_properties(nrlmsise_00 PROPERTIES UNITY_BUILD OFF)
 
 add_definitions(-DTUDAT_BUILD_WITH_NRLMSISE=1)
 
