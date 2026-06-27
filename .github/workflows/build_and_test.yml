@@ -149,6 +149,7 @@ jobs:
       run: |
         cmake -B "${{ github.workspace }}/build" \
           -S "${{ github.workspace }}" \
+          -G "Unix Makefiles" \
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
           -DCMAKE_CXX_COMPILER=${{ matrix.compilers.cxx }} \
           -DCMAKE_C_COMPILER=${{ matrix.compilers.c }} \
